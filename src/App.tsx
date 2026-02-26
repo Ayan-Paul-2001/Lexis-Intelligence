@@ -13,14 +13,18 @@ import {
   Copy,
   Check,
   History,
-  Settings2
+  Settings2,
+  Youtube,
+  Link
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
-import { transcribeAudio, TranscriptionMode } from './services/geminiService';
+import { transcribeAudio, transcribeYoutube, TranscriptionMode } from './services/geminiService';
 
 export default function App() {
   const [file, setFile] = useState<File | null>(null);
+  const [inputType, setInputType] = useState<'file' | 'youtube'>('file');
+  const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [transcription, setTranscription] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -79,14 +83,20 @@ export default function App() {
   };
 
   const handleTranscribe = async () => {
-    if (!file) return;
+    if (inputType === 'file' && !file) return;
+    if (inputType === 'youtube' && !youtubeUrlInput.trim()) return;
 
     setIsTranscribing(true);
     setError(null);
     try {
-      const base64Audio = await fileToBase64(file);
-      const result = await transcribeAudio(base64Audio, file.type, mode);
-      setTranscription(result);
+      let result;
+      if (inputType === 'file' && file) {
+        const base64Audio = await fileToBase64(file);
+        result = await transcribeAudio(base64Audio, file.type, mode);
+      } else {
+        result = await transcribeYoutube(youtubeUrlInput.trim(), mode);
+      }
+      setTranscription(result as string);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -96,6 +106,7 @@ export default function App() {
 
   const reset = () => {
     setFile(null);
+    setYoutubeUrlInput('');
     setTranscription(null);
     setError(null);
     if (audioRef.current) {
@@ -242,9 +253,29 @@ export default function App() {
           {/* Right Column: Controls */}
           <aside className="lg:sticky lg:top-32 space-y-6">
             <div className="bg-white rounded-3xl border border-zinc-200 p-6 shadow-sm space-y-6">
-              <div className="space-y-1">
-                <h4 className="text-sm font-bold uppercase tracking-widest text-zinc-400">Source</h4>
-                <p className="text-xs text-zinc-500">Select your audio recording</p>
+
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-widest text-zinc-400">Source</h4>
+                <div className="flex p-1 bg-zinc-100 rounded-xl gap-1">
+                  <button
+                    onClick={() => { setInputType('file'); setTranscription(null); }}
+                    className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all flex justify-center items-center gap-2 ${inputType === 'file'
+                      ? 'bg-white text-zinc-900 shadow-sm'
+                      : 'text-zinc-400 hover:text-zinc-600'
+                      }`}
+                  >
+                    <Upload size={14} /> File
+                  </button>
+                  <button
+                    onClick={() => { setInputType('youtube'); setTranscription(null); }}
+                    className={`flex-1 h-9 rounded-lg text-xs font-bold transition-all flex justify-center items-center gap-2 ${inputType === 'youtube'
+                      ? 'bg-white text-zinc-900 shadow-sm'
+                      : 'text-zinc-400 hover:text-zinc-600'
+                      }`}
+                  >
+                    <Youtube size={14} /> YouTube
+                  </button>
+                </div>
               </div>
 
               {/* Transcription Mode Selector */}
@@ -277,120 +308,142 @@ export default function App() {
                 </p>
               </div>
 
-              {!file ? (
-                <div
-                  onClick={() => fileInputRef.current?.click()}
-                  className="group relative h-48 rounded-2xl border-2 border-dashed border-zinc-200 hover:border-zinc-900 hover:bg-zinc-50 transition-all cursor-pointer flex flex-col items-center justify-center gap-3"
-                >
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleFileChange}
-                    accept="audio/*"
-                    className="hidden"
-                  />
-                  <div className="p-3 bg-zinc-100 rounded-xl group-hover:bg-zinc-900 group-hover:text-white transition-all">
-                    <Upload size={20} />
-                  </div>
-                  <span className="text-sm font-bold">Choose File</span>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between">
-                    <div className="flex items-center gap-3 overflow-hidden">
-                      <div className="w-10 h-10 bg-white rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-400 flex-shrink-0">
-                        <FileAudio size={18} />
-                      </div>
-                      <div className="overflow-hidden">
-                        <p className="text-sm font-bold truncate">{file.name}</p>
-                        <p className="text-[10px] text-zinc-400 font-mono">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={reset}
-                      className="p-2 text-zinc-300 hover:text-red-500 transition-colors"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
-
-                  {/* Audio Player */}
-                  <div className="rounded-2xl border border-zinc-100 bg-zinc-50 overflow-hidden">
-                    {/* Play/Pause Row */}
-                    <div className="flex items-center gap-3 px-4 pt-4 pb-3">
-                      <button
-                        onClick={togglePlay}
-                        className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-zinc-900 text-white hover:bg-zinc-700 transition-all shadow-sm"
-                      >
-                        {isPlaying
-                          ? <Pause size={14} fill="currentColor" />
-                          : <Play size={14} fill="currentColor" className="ml-0.5" />}
-                      </button>
-
-                      {/* Time stamps */}
-                      <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-500 tabular-nums flex-shrink-0">
-                        <span className={isPlaying ? 'text-zinc-900 font-semibold' : ''}>{formatTime(currentTime)}</span>
-                        <span className="text-zinc-300">/</span>
-                        <span>{formatTime(duration)}</span>
-                      </div>
-
-                      {/* Live pulse indicator */}
-                      {isPlaying && (
-                        <div className="ml-auto flex items-center gap-1">
-                          {[0, 1, 2].map((i) => (
-                            <span
-                              key={i}
-                              className="block w-0.5 bg-zinc-900 rounded-full animate-bounce"
-                              style={{ height: `${8 + i * 4}px`, animationDelay: `${i * 0.15}s`, animationDuration: '0.6s' }}
-                            />
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Seekable Progress Bar */}
-                    <div
-                      className="h-1.5 bg-zinc-200 cursor-pointer relative group mx-4 mb-4 rounded-full overflow-hidden"
-                      onClick={handleSeek}
-                    >
-                      <div
-                        className="h-full bg-zinc-900 rounded-full transition-all duration-100 relative"
-                        style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-                      >
-                        {/* Thumb dot */}
-                        <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 bg-zinc-900 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow" />
-                      </div>
-                    </div>
-
-                    <audio
-                      ref={audioRef}
-                      src={audioUrl || undefined}
-                      onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
-                      onLoadedMetadata={() => setDuration(audioRef.current?.duration ?? 0)}
-                      onEnded={() => { setIsPlaying(false); setCurrentTime(0); }}
+              {inputType === 'file' ? (
+                // --- FILE UPLOAD VIEW ---
+                !file ? (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="group relative h-48 rounded-2xl border-2 border-dashed border-zinc-200 hover:border-zinc-900 hover:bg-zinc-50 transition-all cursor-pointer flex flex-col items-center justify-center gap-3"
+                  >
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleFileChange}
+                      accept="audio/*"
                       className="hidden"
                     />
+                    <div className="p-3 bg-zinc-100 rounded-xl group-hover:bg-zinc-900 group-hover:text-white transition-all">
+                      <Upload size={20} />
+                    </div>
+                    <span className="text-sm font-bold">Choose File</span>
                   </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="p-4 bg-zinc-50 rounded-2xl border border-zinc-100 flex items-center justify-between">
+                      <div className="flex items-center gap-3 overflow-hidden">
+                        <div className="w-10 h-10 bg-white rounded-xl border border-zinc-200 flex items-center justify-center text-zinc-400 flex-shrink-0">
+                          <FileAudio size={18} />
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className="text-sm font-bold truncate">{file.name}</p>
+                          <p className="text-[10px] text-zinc-400 font-mono">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={reset}
+                        className="p-2 text-zinc-300 hover:text-red-500 transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
 
-                  <button
-                    onClick={handleTranscribe}
-                    disabled={isTranscribing}
-                    className="w-full h-14 rounded-2xl bg-zinc-900 text-white font-bold text-sm hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-zinc-200 flex items-center justify-center gap-3"
-                  >
-                    {isTranscribing ? (
-                      <>
-                        <Loader2 className="animate-spin" size={18} />
-                        Processing...
-                      </>
-                    ) : (
-                      <>
-                        <Mic size={18} />
-                        {mode === 'dialogue' ? 'Transcribe as Dialogue' : 'Transcribe as Lyrical'}
-                      </>
+                    {/* Audio Player */}
+                    <div className="rounded-2xl border border-zinc-100 bg-zinc-50 overflow-hidden">
+                      <div className="flex items-center gap-3 px-4 pt-4 pb-3">
+                        <button
+                          onClick={togglePlay}
+                          className="w-9 h-9 flex-shrink-0 flex items-center justify-center rounded-full bg-zinc-900 text-white hover:bg-zinc-700 transition-all shadow-sm"
+                        >
+                          {isPlaying
+                            ? <Pause size={14} fill="currentColor" />
+                            : <Play size={14} fill="currentColor" className="ml-0.5" />}
+                        </button>
+                        <div className="flex items-center gap-1 text-[11px] font-mono text-zinc-500 tabular-nums flex-shrink-0">
+                          <span className={isPlaying ? 'text-zinc-900 font-semibold' : ''}>{formatTime(currentTime)}</span>
+                          <span className="text-zinc-300">/</span>
+                          <span>{formatTime(duration)}</span>
+                        </div>
+                        {isPlaying && (
+                          <div className="ml-auto flex items-center gap-1">
+                            {[0, 1, 2].map((i) => (
+                              <span
+                                key={i}
+                                className="block w-0.5 bg-zinc-900 rounded-full animate-bounce"
+                                style={{ height: `${8 + i * 4}px`, animationDelay: `${i * 0.15}s`, animationDuration: '0.6s' }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className="h-1.5 bg-zinc-200 cursor-pointer relative group mx-4 mb-4 rounded-full overflow-hidden"
+                        onClick={handleSeek}
+                      >
+                        <div
+                          className="h-full bg-zinc-900 rounded-full transition-all duration-100 relative"
+                          style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+                        >
+                          <span className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 w-3 h-3 bg-zinc-900 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow" />
+                        </div>
+                      </div>
+                      <audio
+                        ref={audioRef}
+                        src={audioUrl || undefined}
+                        onTimeUpdate={() => setCurrentTime(audioRef.current?.currentTime ?? 0)}
+                        onLoadedMetadata={() => setDuration(audioRef.current?.duration ?? 0)}
+                        onEnded={() => { setIsPlaying(false); setCurrentTime(0); }}
+                        className="hidden"
+                      />
+                    </div>
+                  </div>
+                )
+              ) : (
+                // --- YOUTUBE URL VIEW ---
+                <div className="space-y-4">
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-red-500">
+                      <Youtube size={18} />
+                    </div>
+                    <input
+                      type="url"
+                      placeholder="https://www.youtube.com/watch?v=..."
+                      value={youtubeUrlInput}
+                      onChange={(e) => setYoutubeUrlInput(e.target.value)}
+                      className="w-full h-12 pl-10 pr-10 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-900 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all placeholder:text-zinc-400"
+                    />
+                    {youtubeUrlInput && (
+                      <button
+                        onClick={() => setYoutubeUrlInput('')}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-zinc-300 hover:text-zinc-600 transition-colors"
+                      >
+                        <X size={16} />
+                      </button>
                     )}
-                  </button>
+                  </div>
+                  <div className="p-3 bg-red-50/50 rounded-xl border border-red-100 flex items-start gap-3">
+                    <Link size={16} className="text-red-400 mt-0.5 flex-shrink-0" />
+                    <p className="text-xs text-red-800 leading-relaxed font-medium">Extracting heavy YouTube media requires background processing. This will take notably longer than local files.</p>
+                  </div>
                 </div>
               )}
+
+              <button
+                onClick={handleTranscribe}
+                disabled={isTranscribing || (inputType === 'file' ? !file : !youtubeUrlInput.trim())}
+                className="w-full h-14 rounded-2xl bg-zinc-900 text-white font-bold text-sm hover:bg-zinc-800 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-xl shadow-zinc-200 flex items-center justify-center gap-3 mt-6"
+              >
+                {isTranscribing ? (
+                  <>
+                    <Loader2 className="animate-spin" size={18} />
+                    Processing...
+                  </>
+                ) : (
+                  <>
+                    <Mic size={18} />
+                    {mode === 'dialogue' ? 'Transcribe as Dialogue' : 'Transcribe as Lyrical'}
+                  </>
+                )}
+              </button>
 
               {error && (
                 <div className="p-4 bg-red-50 rounded-2xl border border-red-100 flex items-start gap-3 text-red-600">
@@ -420,7 +473,7 @@ export default function App() {
       <footer className="fixed bottom-0 left-0 right-0 h-14 flex items-center justify-center px-6 pointer-events-none">
         <div className="bg-zinc-900 border border-zinc-700 px-5 py-2 rounded-full text-[11px] font-semibold uppercase tracking-widest text-zinc-300 pointer-events-auto shadow-lg shadow-zinc-900/20 flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
-          Lexis Intelligence &bull; Transcriber Engine v1.0.4
+          Lexis Intelligence &bull; Transcriber Engine v2.0.0
         </div>
       </footer>
     </div>

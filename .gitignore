@@ -5,3 +5,22 @@ coverage/
 .DS_Store
 *.log
 
+# Environment Variables (contains API keys, credentials, paths)
+.env
+.env.*
+!.env.example
+
+# Service Account Keys
+*-key.json
+
+# Debug/Test Scripts (contain hardcoded credentials and paths)
+list-models.js
+test-regions.js
+test-playdl.js
+test-ytdlp.js
+
+# Vertex AI model dumps (project-specific data)
+models.json
+
+# YouTube player script bundles (contain internal tokens/API refs)
+*-player-script.js

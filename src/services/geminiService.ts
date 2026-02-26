@@ -1,7 +1,3 @@
-import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
-
 export type TranscriptionMode = 'dialogue' | 'lyrical';
 
 /**
@@ -83,36 +79,64 @@ export async function transcribeAudio(
   mimeType: string,
   mode: TranscriptionMode = 'dialogue'
 ): Promise<string> {
-  const model = "gemini-3-flash-preview";
-
-  const audioPart = {
-    inlineData: {
-      data: base64Audio,
-      mimeType: mimeType,
-    },
-  };
 
   const prompt = mode === 'dialogue' ? DIALOGUE_PROMPT : LYRICAL_PROMPT;
-  const textPart = { text: prompt };
 
   try {
-    const response: GenerateContentResponse = await ai.models.generateContent({
-      model,
-      contents: { parts: [audioPart, textPart] },
-      config: {
-        // Low temperature = less hallucination, more faithful transcription
-        temperature: 0.1,
-        // Allow thinking for complex diarization decisions
-        thinkingConfig: {
-          thinkingBudget: 5000,
-        },
+    const response = await fetch('/api/transcribe', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
       },
+      body: JSON.stringify({
+        base64Audio,
+        mimeType,
+        prompt
+      })
     });
 
-    return response.text || "No transcription available.";
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.text || "No transcription available.";
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error("Transcription error:", message);
     throw new Error(`Transcription failed: ${message}`);
+  }
+}
+
+export async function transcribeYoutube(
+  youtubeUrl: string,
+  mode: TranscriptionMode = 'dialogue'
+): Promise<string> {
+  const prompt = mode === 'dialogue' ? DIALOGUE_PROMPT : LYRICAL_PROMPT;
+
+  try {
+    const response = await fetch('/api/transcribe-youtube', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        youtubeUrl,
+        prompt
+      })
+    });
+
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}));
+      throw new Error(errData.error || `HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.text || "No transcription available.";
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error("YouTube transcription error:", message);
+    throw new Error(`YouTube transcription failed: ${message}`);
   }
 }
