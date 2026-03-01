@@ -18,6 +18,8 @@ Lexis is a professional-grade audio transcription application engineered to proc
 
 *   **Verbatim Transcription Processing:** Analyzes and transcribes spoken audio with high precision, capturing non-verbal cues and nuanced dialogue.
 *   **Automated Speaker Diarization:** Intelligently identifies and separates distinct voices within the audio stream, outputting cleanly labeled speaker segments.
+*   **YouTube Video Transcription:** Directly ingests YouTube video URLs to extract and transcribing audio without manual downloading.
+*   **YouTube to MP3 Converter:** Included dedicated side-tool to reliably convert and extract high-quality MP3 files straight from YouTube into a local `Files` directory.
 *   **Integrated Audio Playback:** Features a built-in pre-transcription monitoring environment, allowing users to review audio files immediately upon upload.
 *   **Data Export Mechanisms:** Provides streamlined export functionality, supporting direct clipboard memory access and localized .txt file generation for archival purposes.
 *   **Responsive User Interface:** Built upon React 19 and Tailwind CSS 4, ensuring a responsive, accessible, and performant user interface across modern browsers.
@@ -172,11 +174,18 @@ The service will start and be accessible at `http://localhost:3000`.
 
 ## User Workflow Documentation
 
-1.  **Audio Ingestion:** Initiate the process by dragging and dropping an audio file into the designated upload zone, or utilize the native file selection dialog. Supported formats include standard web-audio containers (e.g., MP3, WAV, M4A).
-2.  **Source Verification:** Utilize the embedded audio player to audition the file and confirm correct selection prior to initiating transcription.
-3.  **Execution:** Trigger the "Transcribe Verbatim" action to send the binary audio stream to the AI processing layer.
+### Transcription Process
+1.  **Audio Ingestion:** Initiate the process by uploading a local audio file (standard web-audio containers like MP3, WAV, M4A) or switch the input source to **YouTube** and paste a video URL.
+2.  **Source Verification:** If using a local file, utilize the embedded audio player to audition the file and confirm correct selection prior to initiating transcription.
+3.  **Execution:** Trigger the transcription action (Dialogue or Lyrical) to send the extracted streaming data to the AI processing layer.
 4.  **Data Review:** Upon successful response, the main transcript area will populate. Review the speaker-attributed dialogue blocks for accuracy.
 5.  **Output Extraction:** Click the "Copy" action to place the formatted transcript into the operating system clipboard, or select "Export" to download a formatted `.txt` document to the local filesystem.
+
+### YouTube to MP3 Conversion
+1.  **Interface Access:** Navigate to the top navigation bar and select the **"Mp3 Converter"** action.
+2.  **Link Input:** Paste the target YouTube video URL into the provided text field.
+3.  **Extraction Trigger:** Click **"Convert"** to spin up the yt-dlp binary system and isolate the core audio as an `.mp3` cache file.
+4.  **Save or Discard:** Upon successful cache, click **"Download"** to permanently dump the file to your isolated `/Files/` root directory. Alternatively, tap **"Cancel"** to abort and flush the temp cache safely.
 
 ## Licensing Information
 

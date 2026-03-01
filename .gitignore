@@ -16,8 +16,6 @@ coverage/
 # Debug/Test Scripts (contain hardcoded credentials and paths)
 list-models.js
 test-regions.js
-test-playdl.js
-test-ytdlp.js
 
 # Vertex AI model dumps (project-specific data)
 models.json

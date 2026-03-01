@@ -172,6 +172,135 @@ export default defineConfig(({ mode }) => {
               res.end(JSON.stringify({ error: err.message }));
             }
           });
+
+          server.middlewares.use('/api/convert-yt-mp3', async (req: any, res) => {
+            if (req.method !== 'POST') {
+              res.statusCode = 405;
+              res.end();
+              return;
+            }
+            try {
+              const { youtubeUrl } = req.body;
+              const urlObj = new URL(youtubeUrl);
+              const videoId = urlObj.searchParams.get('v');
+              const cleanUrl = videoId ? `https://www.youtube.com/watch?v=${videoId}` : youtubeUrl;
+
+              const os = await import('os');
+              const fs = await import('fs');
+              const crypto = await import('crypto');
+              const { execFileSync } = await import('child_process');
+
+              const tmpDir = os.default.tmpdir();
+              const tmpId = crypto.default.randomBytes(8).toString('hex');
+              const tmpFileTemplate = path.join(tmpDir, `lexis-mp3-${tmpId}.%(ext)s`);
+
+              const ytdlpBin = path.join(__dirname, 'node_modules', 'youtube-dl-exec', 'bin', 'yt-dlp.exe');
+              
+              // First, get the title
+              let title = `youtube_audio_${tmpId}`;
+              try {
+                const titleOut = execFileSync(ytdlpBin, [
+                  cleanUrl,
+                  '--get-title',
+                  '--no-warnings',
+                  '--no-check-certificates',
+                  '--no-playlist'
+                ], { timeout: 30000 }).toString('utf8').trim();
+                if (titleOut) title = titleOut.replace(/[^a-zA-Z0-9 _-]/g, '');
+              } catch (e) {
+                console.log("Failed to fetch title, using default");
+              }
+
+              // Run conversion
+              execFileSync(ytdlpBin, [
+                cleanUrl,
+                '--output', tmpFileTemplate,
+                '--format', 'bestaudio/best',
+                '--extract-audio',
+                '--audio-format', 'mp3',
+                '--audio-quality', '0',
+                '--no-warnings',
+                '--no-check-certificates',
+                '--no-playlist'
+              ], { timeout: 120000 });
+
+              const tmpFiles = fs.default.readdirSync(tmpDir).filter(
+                (f: string) => f.startsWith(`lexis-mp3-${tmpId}`) && f.endsWith('.mp3')
+              );
+              
+              if (tmpFiles.length === 0) {
+                throw new Error('Conversion failed or output missing.');
+              }
+
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ tempId: tmpFiles[0], title }));
+            } catch (err: any) {
+              console.error('Convert Error:', err.message);
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+          });
+
+          server.middlewares.use('/api/save-yt-mp3', async (req: any, res) => {
+            if (req.method !== 'POST') {
+              res.statusCode = 405;
+              res.end();
+              return;
+            }
+            try {
+              const { tempId, title } = req.body;
+              const os = await import('os');
+              const fs = await import('fs');
+              const tmpDir = os.default.tmpdir();
+              const actualFile = path.join(tmpDir, tempId);
+
+              if (!fs.default.existsSync(actualFile)) {
+                throw new Error('Temp file not found.');
+              }
+
+              const filesDir = path.join(__dirname, 'Files');
+              if (!fs.default.existsSync(filesDir)) {
+                fs.default.mkdirSync(filesDir);
+              }
+
+              const destFile = path.join(filesDir, `${title}.mp3`);
+              fs.default.copyFileSync(actualFile, destFile);
+              fs.default.unlinkSync(actualFile); // Clean up
+
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: true, savedTo: destFile }));
+            } catch (err: any) {
+              console.error('Save Error:', err.message);
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+          });
+
+          server.middlewares.use('/api/cancel-yt-mp3', async (req: any, res) => {
+            if (req.method !== 'POST') {
+              res.statusCode = 405;
+              res.end();
+              return;
+            }
+            try {
+              const { tempId } = req.body;
+              const os = await import('os');
+              const fs = await import('fs');
+              const tmpDir = os.default.tmpdir();
+              const actualFile = path.join(tmpDir, tempId);
+
+              if (fs.default.existsSync(actualFile)) {
+                fs.default.unlinkSync(actualFile);
+              }
+
+              res.setHeader('Content-Type', 'application/json');
+              res.end(JSON.stringify({ success: true }));
+            } catch (err: any) {
+              console.error('Cancel Error:', err.message);
+              res.statusCode = 500;
+              res.end(JSON.stringify({ error: err.message }));
+            }
+          });
         }
       }
     ],
