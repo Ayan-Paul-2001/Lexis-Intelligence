@@ -1,6 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
+import fs from 'fs';
 import { defineConfig, loadEnv } from 'vite';
 import express from 'express';
 import { GoogleGenAI } from '@google/genai';
@@ -8,6 +9,15 @@ import youtubedl from 'youtube-dl-exec';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
+  fs.appendFileSync('debug.log', `[CONFIG LOAD] mode: ${mode}, project: ${env.VERTEX_PROJECT_ID}\n`);
+
+  // Move this to top level so it is available globally as soon as config loads
+  if (env.GOOGLE_APPLICATION_CREDENTIALS) {
+    const credPath = env.GOOGLE_APPLICATION_CREDENTIALS.replace(/\\/g, '/');
+    process.env.GOOGLE_APPLICATION_CREDENTIALS = credPath;
+    fs.appendFileSync('debug.log', `[AUTH] Using credentials from: ${credPath}\n`);
+  }
+
   return {
     plugins: [
       react(),
@@ -18,18 +28,15 @@ export default defineConfig(({ mode }) => {
           // Serve the API endpoint for vertex translation
           server.middlewares.use(express.json({ limit: '100mb' }));
           server.middlewares.use('/api/transcribe', async (req: any, res) => {
+            const fs = await import('fs');
+            fs.default.appendFileSync('debug.log', `[${new Date().toISOString()}] /api/transcribe - project: ${env.VERTEX_PROJECT_ID}\n`);
             if (req.method !== 'POST') {
               res.statusCode = 405;
               res.end();
               return;
             }
             try {
-              // Apply Vertex AI service account credentials from env if present
-              if (env.GOOGLE_APPLICATION_CREDENTIALS) {
-                process.env.GOOGLE_APPLICATION_CREDENTIALS = env.GOOGLE_APPLICATION_CREDENTIALS;
-              }
-
-              // Initialize GenAI dynamically based on provided env credentials
+              // Initialize GenAI — Vertex AI and apiKey are mutually exclusive
               const ai = env.VERTEX_PROJECT_ID
                 ? new GoogleGenAI({
                   vertexai: true,
@@ -71,18 +78,16 @@ export default defineConfig(({ mode }) => {
           });
 
           server.middlewares.use('/api/transcribe-youtube', async (req: any, res) => {
+            const fs = await import('fs');
+            fs.default.appendFileSync('debug.log', `[${new Date().toISOString()}] /api/transcribe-youtube - project: ${env.VERTEX_PROJECT_ID}\n`);
             if (req.method !== 'POST') {
               res.statusCode = 405;
               res.end();
               return;
             }
             try {
-              if (env.GOOGLE_APPLICATION_CREDENTIALS) {
-                process.env.GOOGLE_APPLICATION_CREDENTIALS = env.GOOGLE_APPLICATION_CREDENTIALS;
-              }
-
               // ytdl is now statically imported at the top
-
+              // Vertex AI and apiKey are mutually exclusive — do not pass both
               const ai = env.VERTEX_PROJECT_ID
                 ? new GoogleGenAI({
                   vertexai: true,
@@ -188,31 +193,30 @@ export default defineConfig(({ mode }) => {
               const os = await import('os');
               const fs = await import('fs');
               const crypto = await import('crypto');
-              const { execFileSync } = await import('child_process');
+              const { execFile } = await import('child_process');
+              const { promisify } = await import('util');
+              const execFileAsync = promisify(execFile);
 
               const tmpDir = os.default.tmpdir();
               const tmpId = crypto.default.randomBytes(8).toString('hex');
               const tmpFileTemplate = path.join(tmpDir, `lexis-mp3-${tmpId}.%(ext)s`);
-
               const ytdlpBin = path.join(__dirname, 'node_modules', 'youtube-dl-exec', 'bin', 'yt-dlp.exe');
-              
-              // First, get the title
+
+              // Fetch title (no timeout)
               let title = `youtube_audio_${tmpId}`;
               try {
-                const titleOut = execFileSync(ytdlpBin, [
-                  cleanUrl,
-                  '--get-title',
-                  '--no-warnings',
-                  '--no-check-certificates',
-                  '--no-playlist'
-                ], { timeout: 30000 }).toString('utf8').trim();
-                if (titleOut) title = titleOut.replace(/[^a-zA-Z0-9 _-]/g, '');
+                const { stdout } = await execFileAsync(ytdlpBin, [
+                  cleanUrl, '--get-title', '--no-warnings',
+                  '--no-check-certificates', '--no-playlist'
+                ], { timeout: 0 });
+                const titleOut = stdout.trim();
+                if (titleOut) title = titleOut.replace(/[^a-zA-Z0-9 _\-]/g, '').trim() || title;
               } catch (e) {
-                console.log("Failed to fetch title, using default");
+                console.log('Failed to fetch title, using default');
               }
 
-              // Run conversion
-              execFileSync(ytdlpBin, [
+              // Convert to MP3 — no timeout, supports any video length
+              await execFileAsync(ytdlpBin, [
                 cleanUrl,
                 '--output', tmpFileTemplate,
                 '--format', 'bestaudio/best',
@@ -222,18 +226,37 @@ export default defineConfig(({ mode }) => {
                 '--no-warnings',
                 '--no-check-certificates',
                 '--no-playlist'
-              ], { timeout: 120000 });
+              ], { timeout: 0 });
 
               const tmpFiles = fs.default.readdirSync(tmpDir).filter(
                 (f: string) => f.startsWith(`lexis-mp3-${tmpId}`) && f.endsWith('.mp3')
               );
-              
-              if (tmpFiles.length === 0) {
-                throw new Error('Conversion failed or output missing.');
-              }
+              if (tmpFiles.length === 0) throw new Error('Conversion failed or output missing.');
 
-              res.setHeader('Content-Type', 'application/json');
-              res.end(JSON.stringify({ tempId: tmpFiles[0], title }));
+              const actualFile = path.join(tmpDir, tmpFiles[0]);
+              const safeFilename = encodeURIComponent(`${title}.mp3`);
+
+              // Stream the file directly to the browser as a download
+              res.setHeader('Content-Type', 'audio/mpeg');
+              res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${safeFilename}`);
+              res.setHeader('Content-Length', String(fs.default.statSync(actualFile).size));
+
+              const readStream = fs.default.createReadStream(actualFile);
+              readStream.pipe(res);
+              readStream.on('end', () => {
+                // Clean up temp file after fully streamed
+                try { fs.default.unlinkSync(actualFile); } catch (_) { }
+              });
+              readStream.on('error', (streamErr: Error) => {
+                console.error('Stream error:', streamErr.message);
+                if (!res.headersSent) {
+                  res.statusCode = 500;
+                  res.end(JSON.stringify({ error: streamErr.message }));
+                }
+                try { fs.default.unlinkSync(actualFile); } catch (_) { }
+              });
+              return; // Don't call res.end() — pipe handles it
+
             } catch (err: any) {
               console.error('Convert Error:', err.message);
               res.statusCode = 500;

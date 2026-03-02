@@ -4,6 +4,9 @@ dist/
 coverage/
 .DS_Store
 *.log
+debug.log
+.vscode/
+.qodo/
 
 # Environment Variables (contains API keys, credentials, paths)
 .env
@@ -15,10 +18,15 @@ coverage/
 
 # Debug/Test Scripts (contain hardcoded credentials and paths)
 list-models.js
-test-regions.js
+test-playdl.js
+test-ytdlp.js
+check-exports.js
 
 # Vertex AI model dumps (project-specific data)
 models.json
+
+# Local downloads (contains MP3 files)
+Files/
 
 # YouTube player script bundles (contain internal tokens/API refs)
 *-player-script.js
