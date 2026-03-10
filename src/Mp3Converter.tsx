@@ -14,7 +14,8 @@ export default function Mp3Converter() {
         setSuccess(false);
 
         try {
-            const res = await fetch('/api/convert-yt-mp3', {
+            const apiUrl = (import.meta as any).env.VITE_API_URL || '';
+            const res = await fetch(`${apiUrl}/api/convert-yt-mp3`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ youtubeUrl: url.trim() }),
