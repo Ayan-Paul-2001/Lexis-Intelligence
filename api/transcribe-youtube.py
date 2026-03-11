@@ -26,8 +26,9 @@ def setup_google_auth():
     elif api_key:
         genai.configure(api_key=api_key)
 
-@app.route('/api/transcribe-youtube', methods=['POST'])
-def handler():
+@app.route('/', defaults={'path': ''}, methods=['POST', 'GET', 'OPTIONS'])
+@app.route('/<path:path>', methods=['POST', 'GET', 'OPTIONS'])
+def handler(path):
     try:
         data = request.get_json()
         youtube_url = data.get('youtubeUrl')
@@ -43,10 +44,6 @@ def handler():
             ydl_opts = {
                 'format': 'bestaudio[ext=m4a]/bestaudio/best',
                 'outtmpl': file_template,
-                'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'm4a',
-                }],
                 'quiet': True,
                 'no_warnings': True,
             }
@@ -57,11 +54,12 @@ def handler():
             # Find the downloaded file
             audio_path = os.path.join(tmp_dir, 'audio.m4a')
             if not os.path.exists(audio_path):
-                # Check for other extensions just in case
                 files = os.listdir(tmp_dir)
                 if not files:
                     raise Exception("Download failed")
                 audio_path = os.path.join(tmp_dir, files[0])
+
+            mime_type = 'audio/mp4' if audio_path.endswith('.m4a') else 'audio/webm'
 
             # Read and encode
             with open(audio_path, 'rb') as f:
@@ -73,7 +71,7 @@ def handler():
             
             response = model.generate_content([
                 prompt,
-                {'mime_type': 'audio/mp4', 'data': audio_data}
+                {'mime_type': mime_type, 'data': audio_data}
             ])
 
             return jsonify({"text": response.text})

@@ -7,8 +7,9 @@ import yt_dlp
 
 app = Flask(__name__)
 
-@app.route('/api/convert-yt-mp3', methods=['POST'])
-def handler():
+@app.route('/', defaults={'path': ''}, methods=['POST', 'GET', 'OPTIONS'])
+@app.route('/<path:path>', methods=['POST', 'GET', 'OPTIONS'])
+def handler(path):
     try:
         data = request.get_json()
         youtube_url = data.get('youtubeUrl')
@@ -22,13 +23,8 @@ def handler():
         file_path = os.path.join(tmp_dir, f'lexis_{file_id}')
 
         ydl_opts = {
-            'format': 'bestaudio/best',
+            'format': 'bestaudio[ext=m4a]/bestaudio/best',
             'outtmpl': f'{file_path}.%(ext)s',
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
             'quiet': True,
         }
 
@@ -39,21 +35,29 @@ def handler():
             # Sanitize title
             safe_title = "".join([c for c in title if c.isalnum() or c in (' ', '-', '_')]).strip()
 
-        actual_file = f'{file_path}.mp3'
+        # Find actual downloaded file (might not be mp3 anymore since we bypass ffmpeg)
+        files = os.listdir(tmp_dir)
+        downloaded = [f for f in files if f.startswith(f'lexis_{file_id}')]
         
-        if not os.path.exists(actual_file):
-            return jsonify({"error": "Conversion failed"}), 500
+        if not downloaded:
+            return jsonify({"error": "Conversion failed or file not found"}), 500
+
+        actual_file_name = downloaded[0]
+        actual_file_path = os.path.join(tmp_dir, actual_file_name)
+        ext = actual_file_name.split('.')[-1]
+
+        mimetype = "audio/mp4" if ext == "m4a" else "audio/webm"
 
         # Send the file
         response = send_file(
-            actual_file,
-            mimetype="audio/mpeg",
+            actual_file_path,
+            mimetype=mimetype,
             as_attachment=True,
-            download_name=f"{safe_title}.mp3"
+            download_name=f"{safe_title}.{ext}"
         )
         
         # Add headers for PWA/Vercel
-        response.headers["Content-Disposition"] = f"attachment; filename*=UTF-8''{urllib.parse.quote(safe_title)}.mp3"
+        response.headers["Content-Disposition"] = f"attachment; filename*=UTF-8''{urllib.parse.quote(safe_title)}.{ext}"
         return response
 
     except Exception as e:
