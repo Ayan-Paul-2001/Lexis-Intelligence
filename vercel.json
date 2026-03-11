@@ -7,8 +7,7 @@
         "api/*.py": {
             "maxDuration": 10
         },
-        "api/transcribe.ts": {
-            "runtime": "nodejs20.x",
+        "api/*.ts": {
             "maxDuration": 10
         }
     },
