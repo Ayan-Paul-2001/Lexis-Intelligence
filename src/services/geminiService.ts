@@ -83,8 +83,7 @@ export async function transcribeAudio(
   const prompt = mode === 'dialogue' ? DIALOGUE_PROMPT : LYRICAL_PROMPT;
 
   try {
-    const apiUrl = (import.meta as any).env.VITE_API_URL || '';
-    const response = await fetch(`${apiUrl}/api/transcribe`, {
+    const response = await fetch('/api/transcribe', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -117,8 +116,7 @@ export async function transcribeYoutube(
   const prompt = mode === 'dialogue' ? DIALOGUE_PROMPT : LYRICAL_PROMPT;
 
   try {
-    const apiUrl = (import.meta as any).env.VITE_API_URL || '';
-    const response = await fetch(`${apiUrl}/api/transcribe-youtube`, {
+    const response = await fetch('/api/transcribe-youtube', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

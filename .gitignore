@@ -1,5 +1,14 @@
 node_modules/
+dist/
+build/
+coverage/
+.DS_Store
+*.log
+debug.log
+.vscode/
+.qodo/
 
+# Environment Variables
 .env
 .env.*
 !.env.example
@@ -7,3 +16,7 @@ node_modules/
 # Service Account Keys
 service-account-key.json
 *-key.json
+
+# Local Data
+Files/
+models.json

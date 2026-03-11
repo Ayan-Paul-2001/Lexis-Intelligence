@@ -4,14 +4,26 @@
     "installCommand": "npm install",
     "framework": null,
     "functions": {
-        "api/**/*.ts": {
+        "api/*.py": {
+            "maxDuration": 10
+        },
+        "api/transcribe.ts": {
+            "runtime": "nodejs20.x",
             "maxDuration": 10
         }
     },
     "rewrites": [
         {
-            "source": "/api/:path*",
-            "destination": "/api/:path*"
+            "source": "/api/transcribe-youtube",
+            "destination": "/api/transcribe-youtube.py"
+        },
+        {
+            "source": "/api/convert-yt-mp3",
+            "destination": "/api/convert-yt-mp3.py"
+        },
+        {
+            "source": "/api/transcribe",
+            "destination": "/api/transcribe.ts"
         },
         {
             "source": "/(.*)",

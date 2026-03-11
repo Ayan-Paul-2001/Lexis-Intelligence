@@ -106,3 +106,4 @@
 [AUTH] Using credentials from: ./service-account-key.json
 [CONFIG LOAD] mode: development, project: aielts-477206
 [AUTH] Using credentials from: ./service-account-key.json
+[2026-03-10T16:55:31.810Z] /api/transcribe-youtube - project: aielts-477206
