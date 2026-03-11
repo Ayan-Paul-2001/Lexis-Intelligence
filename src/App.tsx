@@ -21,7 +21,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import Markdown from 'react-markdown';
 import { transcribeAudio, transcribeYoutube, TranscriptionMode } from './services/geminiService';
 import Mp3Converter from './Mp3Converter';
-import PwaUpdatePrompt from './PwaUpdatePrompt';
 
 export default function App() {
   const [view, setView] = useState<'transcriber' | 'converter'>('transcriber');
@@ -489,7 +488,6 @@ export default function App() {
           Lexis Intelligence &bull; Transcriber Engine v2.0.0
         </div>
       </footer>
-      <PwaUpdatePrompt />
     </div>
   );
 }

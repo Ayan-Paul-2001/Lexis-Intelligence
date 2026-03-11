@@ -1,15 +1,9 @@
 import { GoogleGenAI } from '@google/genai';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import { config } from 'dotenv';
+import dotenv from 'dotenv';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-// Load .env so VERTEX_PROJECT_ID and credentials are available
-config({ path: path.resolve(__dirname, '.env') });
-process.env.GOOGLE_APPLICATION_CREDENTIALS = path.resolve(__dirname, 'service-account-key.json');
-
+dotenv.config();
 async function testRegion(location) {
-    const ai = new GoogleGenAI({ vertexai: true, project: process.env.VERTEX_PROJECT_ID, location });
+    const ai = new GoogleGenAI({ vertexai: true, project: 'aielts-477206', location });
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-3-flash-preview',

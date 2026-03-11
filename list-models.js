@@ -1,16 +1,11 @@
 import { GoogleGenAI } from '@google/genai';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
-import path from 'path';
-import { config } from 'dotenv';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-config({ path: path.resolve(__dirname, '.env') });
-process.env.GOOGLE_APPLICATION_CREDENTIALS = path.resolve(__dirname, 'service-account-key.json');
+process.env.GOOGLE_APPLICATION_CREDENTIALS = 'c:\\Users\\ayanp\\OneDrive\\Desktop\\New folder (2)\\AIELTS\\backend\\service-account-key.json';
 
 const ai = new GoogleGenAI({
     vertexai: true,
-    project: process.env.VERTEX_PROJECT_ID,
+    project: 'aielts-477206',
     location: 'us-central1'
 });
 

@@ -27,83 +27,35 @@
 [2026-03-02T08:41:57.347Z] /api/transcribe - project: aielts-477206
 [CONFIG LOAD] mode: development, project: aielts-477206
 [AUTH] Using credentials from: c:/Users/ayanp/OneDrive/Desktop/New folder (2)/AIELTS/backend/service-account-key.json
-[2026-03-02T15:04:54.741Z] /api/transcribe-youtube - project: aielts-477206
+[2026-03-11T05:19:12.481Z] /api/transcribe-youtube - project: aielts-477206
+[2026-03-11T06:03:21.764Z] /api/transcribe - project: aielts-477206
+[2026-03-11T06:09:48.739Z] /api/transcribe - project: aielts-477206
+[2026-03-11T06:15:11.701Z] /api/transcribe - project: aielts-477206
+[2026-03-11T06:17:43.830Z] /api/transcribe-youtube - project: aielts-477206
 [CONFIG LOAD] mode: development, project: aielts-477206
 [AUTH] Using credentials from: c:/Users/ayanp/OneDrive/Desktop/New folder (2)/AIELTS/backend/service-account-key.json
-[2026-03-03T05:48:02.935Z] /api/transcribe-youtube - project: aielts-477206
-[2026-03-03T05:49:18.000Z] /api/transcribe-youtube - project: aielts-477206
+[2026-03-11T06:28:56.337Z] /api/transcribe - project: aielts-477206
+[2026-03-11T06:33:51.040Z] /api/transcribe-youtube - project: aielts-477206
 [CONFIG LOAD] mode: development, project: aielts-477206
 [AUTH] Using credentials from: c:/Users/ayanp/OneDrive/Desktop/New folder (2)/AIELTS/backend/service-account-key.json
-[2026-03-03T05:57:05.001Z] /api/transcribe-youtube - project: aielts-477206
-[2026-03-03T06:14:34.036Z] /api/transcribe - project: aielts-477206
-[2026-03-03T06:36:40.972Z] /api/transcribe-youtube - project: aielts-477206
-[2026-03-03T07:01:26.317Z] /api/transcribe - project: aielts-477206
 [CONFIG LOAD] mode: development, project: aielts-477206
 [AUTH] Using credentials from: c:/Users/ayanp/OneDrive/Desktop/New folder (2)/AIELTS/backend/service-account-key.json
-[2026-03-03T08:08:15.646Z] /api/transcribe-youtube - project: aielts-477206
-[2026-03-03T09:09:25.173Z] /api/transcribe - project: aielts-477206
 [CONFIG LOAD] mode: development, project: aielts-477206
 [AUTH] Using credentials from: c:/Users/ayanp/OneDrive/Desktop/New folder (2)/AIELTS/backend/service-account-key.json
-[2026-03-04T04:52:42.020Z] /api/transcribe - project: aielts-477206
-[2026-03-04T05:12:31.096Z] /api/transcribe - project: aielts-477206
-[2026-03-04T05:32:15.893Z] /api/transcribe - project: aielts-477206
-[2026-03-04T05:45:09.098Z] /api/transcribe - project: aielts-477206
-[2026-03-04T06:03:28.327Z] /api/transcribe - project: aielts-477206
-[2026-03-04T06:08:39.351Z] /api/transcribe - project: aielts-477206
-[2026-03-04T06:25:43.784Z] /api/transcribe - project: aielts-477206
-[2026-03-04T07:56:25.761Z] /api/transcribe - project: aielts-477206
+[2026-03-11T06:41:22.038Z] /api/transcribe - project: aielts-477206
+[2026-03-11T06:43:09.418Z] /api/transcribe - project: aielts-477206
+[2026-03-11T06:45:12.206Z] /api/transcribe - project: aielts-477206
 [CONFIG LOAD] mode: development, project: aielts-477206
 [AUTH] Using credentials from: c:/Users/ayanp/OneDrive/Desktop/New folder (2)/AIELTS/backend/service-account-key.json
-[2026-03-05T04:51:10.354Z] /api/transcribe - project: aielts-477206
-[2026-03-05T05:05:33.968Z] /api/transcribe - project: aielts-477206
-[2026-03-05T05:48:33.647Z] /api/transcribe - project: aielts-477206
-[2026-03-05T06:02:13.340Z] /api/transcribe - project: aielts-477206
-[2026-03-05T06:30:29.661Z] /api/transcribe - project: aielts-477206
-[2026-03-05T06:38:23.336Z] /api/transcribe - project: aielts-477206
-[2026-03-05T06:50:32.183Z] /api/transcribe - project: aielts-477206
-[2026-03-05T07:11:18.634Z] /api/transcribe - project: aielts-477206
-[2026-03-05T07:32:45.744Z] /api/transcribe - project: aielts-477206
 [CONFIG LOAD] mode: development, project: aielts-477206
 [AUTH] Using credentials from: c:/Users/ayanp/OneDrive/Desktop/New folder (2)/AIELTS/backend/service-account-key.json
-[2026-03-08T06:36:43.939Z] /api/transcribe - project: aielts-477206
-[2026-03-08T06:56:12.803Z] /api/transcribe - project: aielts-477206
-[2026-03-08T07:39:18.889Z] /api/transcribe - project: aielts-477206
-[2026-03-08T08:00:37.925Z] /api/transcribe - project: aielts-477206
+[2026-03-11T07:56:50.336Z] /api/transcribe-youtube - project: aielts-477206
+[2026-03-11T08:05:58.226Z] /api/transcribe - project: aielts-477206
+[2026-03-11T08:12:04.564Z] /api/transcribe - project: aielts-477206
+[2026-03-11T08:12:13.829Z] /api/transcribe - project: aielts-477206
+[2026-03-11T08:17:35.074Z] /api/transcribe - project: aielts-477206
 [CONFIG LOAD] mode: development, project: aielts-477206
 [AUTH] Using credentials from: c:/Users/ayanp/OneDrive/Desktop/New folder (2)/AIELTS/backend/service-account-key.json
-[2026-03-09T04:49:49.269Z] /api/transcribe-youtube - project: aielts-477206
-[2026-03-09T05:48:03.715Z] /api/transcribe - project: aielts-477206
-[2026-03-09T07:20:21.915Z] /api/transcribe - project: aielts-477206
-[2026-03-09T07:51:07.825Z] /api/transcribe - project: aielts-477206
-[2026-03-09T08:32:45.152Z] /api/transcribe - project: aielts-477206
-[CONFIG LOAD] mode: development, project: aielts-477206
-[AUTH] Using credentials from: c:/Users/ayanp/OneDrive/Desktop/New folder (2)/AIELTS/backend/service-account-key.json
-[2026-03-10T05:40:08.001Z] /api/transcribe - project: aielts-477206
-[2026-03-10T05:45:32.518Z] /api/transcribe - project: aielts-477206
-[2026-03-10T06:11:49.816Z] /api/transcribe - project: aielts-477206
-[2026-03-10T06:17:02.642Z] /api/transcribe - project: aielts-477206
-[2026-03-10T06:19:06.674Z] /api/transcribe - project: aielts-477206
-[2026-03-10T06:21:25.140Z] /api/transcribe - project: aielts-477206
-[CONFIG LOAD] mode: development, project: aielts-477206
-[AUTH] Using credentials from: c:/Users/ayanp/OneDrive/Desktop/New folder (2)/AIELTS/backend/service-account-key.json
-[2026-03-10T06:22:26.857Z] /api/transcribe - project: aielts-477206
-[2026-03-10T06:33:10.582Z] /api/transcribe - project: aielts-477206
-[2026-03-10T06:48:50.581Z] /api/transcribe - project: aielts-477206
-[2026-03-10T06:54:41.682Z] /api/transcribe - project: aielts-477206
-[2026-03-10T07:36:13.819Z] /api/transcribe - project: aielts-477206
-[2026-03-10T08:25:23.032Z] /api/transcribe - project: aielts-477206
-[CONFIG LOAD] mode: production, project: aielts-477206
-[AUTH] Using credentials from: ./service-account-key.json
-[CONFIG LOAD] mode: production, project: aielts-477206
-[AUTH] Using credentials from: ./service-account-key.json
-[CONFIG LOAD] mode: development, project: aielts-477206
-[AUTH] Using credentials from: ./service-account-key.json
-[CONFIG LOAD] mode: development, project: aielts-477206
-[AUTH] Using credentials from: ./service-account-key.json
-[CONFIG LOAD] mode: development, project: aielts-477206
-[AUTH] Using credentials from: ./service-account-key.json
-[CONFIG LOAD] mode: development, project: aielts-477206
-[AUTH] Using credentials from: ./service-account-key.json
-[CONFIG LOAD] mode: development, project: aielts-477206
-[AUTH] Using credentials from: ./service-account-key.json
-[2026-03-10T16:55:31.810Z] /api/transcribe-youtube - project: aielts-477206
+[2026-03-11T08:18:35.028Z] /api/transcribe - project: aielts-477206
+[2026-03-11T08:23:32.290Z] /api/transcribe - project: aielts-477206
+[2026-03-11T09:12:48.177Z] /api/transcribe - project: aielts-477206

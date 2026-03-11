@@ -1,22 +1,14 @@
 node_modules/
-dist/
-build/
-coverage/
-.DS_Store
-*.log
-debug.log
-.vscode/
-.qodo/
 
-# Environment Variables
+
+# Environment Variables (contains API keys, credentials, paths)
 .env
 .env.*
 !.env.example
 
 # Service Account Keys
-service-account-key.json
 *-key.json
-
-# Local Data
-Files/
-models.json
+service-account-key.json
+test-regions.js
+# YouTube player script bundles (contain internal tokens/API refs)
+*-player-script.js

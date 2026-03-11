@@ -1,6 +1,5 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
-import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 import fs from 'fs';
 import { defineConfig, loadEnv } from 'vite';
@@ -23,81 +22,6 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       tailwindcss(),
-      VitePWA({
-        registerType: 'autoUpdate',
-        injectRegister: 'auto',
-        includeAssets: ['Lexis.png', 'favicon.ico'],
-        manifest: {
-          name: 'Lexis Intelligence',
-          short_name: 'Lexis',
-          description: 'AI-powered IELTS preparation platform with transcription, listening tests, and more.',
-          theme_color: '#0f172a',
-          background_color: '#0f172a',
-          display: 'standalone',
-          orientation: 'portrait-primary',
-          scope: '/',
-          start_url: '/',
-          icons: [
-            {
-              src: 'Lexis.png',
-              sizes: '192x192',
-              type: 'image/png',
-              purpose: 'any'
-            },
-            {
-              src: 'Lexis.png',
-              sizes: '512x512',
-              type: 'image/png',
-              purpose: 'any maskable'
-            }
-          ],
-          categories: ['education', 'productivity'],
-          lang: 'en'
-        },
-        workbox: {
-          globPatterns: ['**/*.{js,css,html,ico,svg,woff2}'],
-          // Exclude large static assets from precache — they are handled by runtime CacheFirst instead
-          globIgnores: ['**/Lexis.png'],
-          maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MiB safety net
-          navigateFallback: '/index.html',
-          navigateFallbackDenylist: [/^\/api\//],
-          runtimeCaching: [
-            {
-              // Network-first for API routes — always try fresh
-              urlPattern: /^\/api\//,
-              handler: 'NetworkOnly'
-            },
-            {
-              // Cache-first for static assets (fonts, images)
-              urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|woff2?|ttf|eot)$/,
-              handler: 'CacheFirst',
-              options: {
-                cacheName: 'lexis-static-assets',
-                expiration: {
-                  maxEntries: 60,
-                  maxAgeSeconds: 30 * 24 * 60 * 60 // 30 days
-                }
-              }
-            },
-            {
-              // StaleWhileRevalidate for JS/CSS bundles
-              urlPattern: /\.(?:js|css)$/,
-              handler: 'StaleWhileRevalidate',
-              options: {
-                cacheName: 'lexis-js-css',
-                expiration: {
-                  maxEntries: 30,
-                  maxAgeSeconds: 7 * 24 * 60 * 60 // 7 days
-                }
-              }
-            }
-          ]
-        },
-        devOptions: {
-          enabled: true,
-          type: 'module' // Required for Vite's ESM dev server
-        }
-      }),
       {
         name: 'vertex-ai-api',
         configureServer(server) {
@@ -147,10 +71,9 @@ export default defineConfig(({ mode }) => {
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ text: response.text }));
             } catch (err: any) {
-              console.error('[/api/transcribe] Error:', err.message);
+              console.error('Vertex AI Error:', err.message);
               res.statusCode = 500;
-              // Never forward raw SDK errors to the browser — they can contain project IDs, credential paths, and endpoints
-              res.end(JSON.stringify({ error: 'Transcription failed. Please try again.' }));
+              res.end(JSON.stringify({ error: err.message }));
             }
           });
 
@@ -249,9 +172,9 @@ export default defineConfig(({ mode }) => {
                 }
               }
             } catch (err: any) {
-              console.error('[/api/transcribe-youtube] Error:', err.message);
+              console.error('Youtube/Vertex AI Error:', err.message);
               res.statusCode = 500;
-              res.end(JSON.stringify({ error: 'YouTube transcription failed. Please try again.' }));
+              res.end(JSON.stringify({ error: err.message }));
             }
           });
 
@@ -325,19 +248,19 @@ export default defineConfig(({ mode }) => {
                 try { fs.default.unlinkSync(actualFile); } catch (_) { }
               });
               readStream.on('error', (streamErr: Error) => {
-                console.error('[/api/convert-yt-mp3] Stream error:', streamErr.message);
+                console.error('Stream error:', streamErr.message);
                 if (!res.headersSent) {
                   res.statusCode = 500;
-                  res.end(JSON.stringify({ error: 'Download stream failed. Please try again.' }));
+                  res.end(JSON.stringify({ error: streamErr.message }));
                 }
                 try { fs.default.unlinkSync(actualFile); } catch (_) { }
               });
               return; // Don't call res.end() — pipe handles it
 
             } catch (err: any) {
-              console.error('[/api/convert-yt-mp3] Error:', err.message);
+              console.error('Convert Error:', err.message);
               res.statusCode = 500;
-              res.end(JSON.stringify({ error: 'Conversion failed. Please check the URL and try again.' }));
+              res.end(JSON.stringify({ error: err.message }));
             }
           });
 
@@ -368,12 +291,11 @@ export default defineConfig(({ mode }) => {
               fs.default.unlinkSync(actualFile); // Clean up
 
               res.setHeader('Content-Type', 'application/json');
-              // Never expose server filesystem paths (savedTo) to the browser
-              res.end(JSON.stringify({ success: true }));
+              res.end(JSON.stringify({ success: true, savedTo: destFile }));
             } catch (err: any) {
-              console.error('[/api/save-yt-mp3] Error:', err.message);
+              console.error('Save Error:', err.message);
               res.statusCode = 500;
-              res.end(JSON.stringify({ error: 'Save failed. Please try again.' }));
+              res.end(JSON.stringify({ error: err.message }));
             }
           });
 
@@ -397,17 +319,16 @@ export default defineConfig(({ mode }) => {
               res.setHeader('Content-Type', 'application/json');
               res.end(JSON.stringify({ success: true }));
             } catch (err: any) {
-              console.error('[/api/cancel-yt-mp3] Error:', err.message);
+              console.error('Cancel Error:', err.message);
               res.statusCode = 500;
-              res.end(JSON.stringify({ error: 'Cancellation failed.' }));
+              res.end(JSON.stringify({ error: err.message }));
             }
           });
         }
       }
     ],
     define: {
-      // Intentionally empty — no server-side secrets should be injected into the frontend bundle.
-      // All API keys and credentials are consumed exclusively in vite.config.ts server middlewares.
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
     },
     resolve: {
       alias: {
