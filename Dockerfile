@@ -1,9 +1,11 @@
 # Use the official Node.js standard image (Debian-based)
 FROM node:20-bookworm-slim
 
-# Install necessary system dependencies: FFmpeg (vital for audio compression)
+# Install necessary system dependencies: FFmpeg and Python (required by yt-dlp)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
+    python3 \
+    python-is-python3 \
     && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory directly inside the container
