@@ -1,0 +1,5 @@
+{
+  "name": "Lexis Intelligence",
+  "description": "Transcribe audio files into speaker-labeled dialogue using Gemini AI.",
+  "requestFramePermissions": []
+}

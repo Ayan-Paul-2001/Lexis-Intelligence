@@ -1,0 +1,8 @@
+node_modules
+dist
+.env
+.gitignore
+.git
+.qodo
+debug.log
+Lexis.png

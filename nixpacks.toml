@@ -1,0 +1,8 @@
+[providers]
+nixpacks = ["node", "ffmpeg"]
+
+[phases.setup]
+aptPkgs = ["ffmpeg"]
+
+[start]
+cmd = "npm run start"

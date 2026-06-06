@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  body {
+    @apply antialiased;
+  }
+
+  .prose p {
+    @apply mb-6 leading-[1.8] text-zinc-700;
+  }
+  
+  .prose strong {
+    @apply text-zinc-900 font-bold;
+  }
+
+  /* Custom dialogue styling */
+  .prose p:has(strong:first-child) {
+    @apply pl-6 border-l border-zinc-200 py-1 transition-colors hover:border-zinc-900;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-zinc-200 rounded-full hover:bg-zinc-300 transition-colors;
+  }
+}
